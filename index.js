@@ -1,71 +1,148 @@
 document.addEventListener("DOMContentLoaded", () => {
+  document.body.classList.add("loading");
+  document.documentElement.classList.add("loading");
+
   const titles = [
-    "`Graphics Designer`",
-    "`Digital Editor`",
-    "`Game Developer`",
-    "`Game Tester`",
-    "`Data Analyst`",
-    "`Graphic Editor`",
+    "Graphics Designer",
+    "Digital Editor",
+    "Game Developer",
+    "Game Tester",
+    "Data Analyst",
+    "Graphic Editor",
   ];
 
-  const titleElement = document.getElementById("animated-title");
+  const nameVariants = [
+    "John Louie Ubias",
+    "John Louie",
+    "Louie",
+    "Luwi",
+    "SenpaiLuwi",
+    "LuwAA",
+  ];
+
   const nameElement = document.getElementById("name-title");
+  const titleElement = document.getElementById("animated-title");
 
-  // Set custom name size
-  nameElement.style.fontSize = "4rem"; // Customize as needed
+  // Set base font sizes
+  nameElement.style.fontSize = "4rem";
+  titleElement.style.fontSize = "1.5rem";
 
-  let index = 0;
+  // Glitchy typewriter effect for NAME
+  function typeWriterGlitch(text, element, speed = 60, prefix = "") {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+=-<>~|";
+    let displayText = Array(text.length).fill("");
+    let progress = 0;
 
-  function cycleTitles() {
-    titleElement.classList.add("fade-slide-up");
+    const interval = setInterval(() => {
+      for (let i = 0; i < text.length; i++) {
+        if (i < progress) {
+          displayText[i] = text[i];
+        } else {
+          displayText[i] = chars[Math.floor(Math.random() * chars.length)];
+        }
+      }
 
-    setTimeout(() => {
-      index = (index + 1) % titles.length;
-      titleElement.textContent = titles[index];
+      element.textContent = prefix + displayText.join("");
 
-      titleElement.classList.remove("fade-slide-up");
-      titleElement.classList.add("fade-slide-down");
-
-      setTimeout(() => {
-        titleElement.classList.remove("fade-slide-down");
-      }, 500);
-    }, 500);
+      if (progress <= text.length) {
+        progress++;
+      } else {
+        clearInterval(interval);
+      }
+    }, speed);
   }
 
-  setInterval(cycleTitles, 5000);
-
-  // Wait for full animation (4s) + 0.5s buffer
-  setTimeout(() => {
-    document.querySelector(".loader-wrapper").style.transition = "opacity 1s ease";
-    document.querySelector(".loader-wrapper").style.opacity = 0;
-
-    // Remove from DOM after fade
+  // Slide up transition for TITLE
+  function cycleTitleSlideUp(newTitle) {
+    titleElement.classList.add("slide-up-out");
     setTimeout(() => {
-      document.querySelector(".loader-wrapper").style.display = "none";
+      titleElement.textContent = newTitle;
+      titleElement.classList.remove("slide-up-out");
+      titleElement.classList.add("slide-up-in");
+
+      // Cleanup after animation
+      setTimeout(() => {
+        titleElement.classList.remove("slide-up-in");
+      }, 400);
+    }, 300);
+  }
+
+  // Main cycle
+  function updateNameAndTitle() {
+    const randomName = nameVariants[Math.floor(Math.random() * nameVariants.length)];
+    const randomTitle = titles[Math.floor(Math.random() * titles.length)];
+
+    typeWriterGlitch(randomName, nameElement, 50);
+    cycleTitleSlideUp(randomTitle);
+  }
+
+  // Initial run
+  updateNameAndTitle();
+
+  // Repeat every 5 seconds
+  setInterval(updateNameAndTitle, 5000);
+
+  // Loader fade out and allow scrolling
+  setTimeout(() => {
+    const loader = document.querySelector(".loader-wrapper");
+    loader.style.transition = "opacity 1s ease";
+    loader.style.opacity = 0;
+
+    setTimeout(() => {
+      loader.style.display = "none";
+
+      // Re-enable scrolling
+      document.body.classList.remove("loading");
+      document.documentElement.classList.remove("loading");
     }, 500);
   }, 2100);
 });
 
+// Section scroll highlight
+let sections = document.querySelectorAll('section');
+let navLinks = document.querySelectorAll('.glass-nav a');
 
-document.addEventListener("DOMContentLoaded", () => {
-  const dotCount = Math.floor(Math.random() * 11) + 50; 
-  const body = document.body;
+window.onscroll = () => {
+  sections.forEach(sec => {
+    let top = window.scrollY;
+    let offset = sec.offsetTop - 150;
+    let height = sec.offsetHeight;
+    let id = sec.getAttribute('id');
+    if (top >= offset && top < offset + height) {
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        document.querySelector('.glass-nav a[href*=' + id + ']').classList.add('active');
+      });
+    }
+  });
+};
 
-  for (let i = 0; i < dotCount; i++) {
-    const dot = document.createElement("div");
-    dot.classList.add("glow-dot");
+// Smooth scroll on nav click
+document.querySelectorAll('.glass-nav a').forEach(link => {
+  link.addEventListener('click', function (e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    target.scrollIntoView({ behavior: 'smooth' });
+  });
+});
 
-    // Position randomly within viewport
-    dot.style.top = `${Math.random() * 100}vh`;
-    dot.style.left = `${Math.random() * 100}vw`;
-
-    body.appendChild(dot);
-  }
+// Prevent image dragging
+document.querySelectorAll('.game-icon img, .editing-icon img, .programming-icon img').forEach(img => {
+  img.addEventListener('dragstart', e => e.preventDefault());
 });
 
 
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const scrollPercent = (scrollTop / docHeight) * 100;
+  document.getElementById('progress-bar').style.height = scrollPercent + '%';
+});
+
+
+// Particle background
 new FinisherHeader({
-  "count": 500,
+  "count": 100,
   "size": {
     "min": 2,
     "max": 13,
@@ -96,8 +173,5 @@ new FinisherHeader({
     "edge": 0
   },
   "skew": 0,
-  "shapes": [
-    "c"
-  ]
+  "shapes": ["c"]
 });
-
